@@ -2780,7 +2780,7 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
         }
 
         UserStoreManager userManager = this;
-        if (StringUtils.isNotEmpty(extractedDomain)) {
+        if (StringUtils.isNotEmpty(extractedDomain) && !StringUtils.equalsIgnoreCase(getMyDomainName(), extractedDomain)) {
             UserStoreManager secondaryUserStoreManager = getSecondaryUserStoreManager(extractedDomain);
             if (secondaryUserStoreManager != null) {
                 userManager = secondaryUserStoreManager;
@@ -2788,6 +2788,8 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
                     log.debug("Domain: " + extractedDomain + " is passed with the claim and user store manager is loaded"
                             + " for the given domain name.");
                 }
+            } else {
+                throw new UserStoreException("Invalid Domain Name: " + extractedDomain);
             }
         }
 
@@ -6286,7 +6288,7 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
             } else {
                 userList = doListUsersWithID(filter, maxItemLimit)
                         .stream()
-                        .map(User::getDomainQualifiedUsername)
+                        .map(User::getUsername)
                         .toArray(String[]::new);
             }
         } catch (UserStoreException ex) {
@@ -9598,7 +9600,7 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
         }
 
         UserStoreManager userManager = this;
-        if (StringUtils.isNotEmpty(extractedDomain)) {
+        if (StringUtils.isNotEmpty(extractedDomain) && !StringUtils.equalsIgnoreCase(getMyDomainName(), extractedDomain)) {
             UserStoreManager secondaryUserStoreManager = getSecondaryUserStoreManager(extractedDomain);
             if (secondaryUserStoreManager != null) {
                 userManager = secondaryUserStoreManager;
@@ -9606,6 +9608,8 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
                     log.debug("Domain: " + extractedDomain + " is passed with the claim and user store manager is loaded"
                             + " for the given domain name.");
                 }
+            } else {
+                throw new UserStoreException("Invalid Domain Name: " + extractedDomain);
             }
         }
 
@@ -14705,8 +14709,11 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
         }
 
         UserStoreManager userManager = this;
-        if (StringUtils.isNotEmpty(extractedDomain)) {
+        if (StringUtils.isNotEmpty(extractedDomain) && !StringUtils.equalsIgnoreCase(getMyDomainName(), extractedDomain)) {
             userManager = getSecondaryUserStoreManager(extractedDomain);
+            if (userManager == null) {
+                throw new UserStoreException("Invalid Domain Name: " + extractedDomain);
+            }
             if (log.isDebugEnabled()) {
                 log.debug("Domain: " + extractedDomain + " is passed with the claim and user store manager is loaded"
                         + " for the given domain name.");
