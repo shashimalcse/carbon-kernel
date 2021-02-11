@@ -921,7 +921,5 @@ public interface UniqueIDUserOperationEventListener extends UserOperationEventLi
     boolean doPostGetUserListOfGroup(String groupID, List<User> userList, UserStoreManager userStoreManager)
             throws UserStoreException;
 
-
-
 }
 
