@@ -5158,6 +5158,14 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
                 hybridRoleManager.updateUserListOfHybridRole(userStore.getDomainFreeName(), deletedUsers, newUsers);
                 handleDoPostUpdateUserListOfRole(roleName, deletedUsers, newUsers, true);
             } else {
+                if (!handlePreUpdateUserListOfRole(roleName, deletedUsers, newUsers, false, true)) {
+                    handleUpdateUserListOfRoleFailure(
+                            ErrorMessages.ERROR_CODE_ERROR_WHILE_PRE_UPDATE_USERS_OF_ROLE.getCode(),
+                            String.format(ErrorMessages.ERROR_CODE_ERROR_WHILE_PRE_UPDATE_USERS_OF_ROLE.getMessage(),
+                                    UserCoreErrorConstants.PRE_LISTENER_TASKS_FAILED_MESSAGE), roleName, deletedUsers,
+                            newUsers);
+                    return;
+                }
                 hybridRoleManager.updateUserListOfHybridRole(userStore.getDomainAwareName(), deletedUsers, newUsers);
                 handleDoPostUpdateUserListOfRole(roleName, deletedUsers, newUsers, true);
             }
@@ -5469,8 +5477,8 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
 
         if (CollectionUtils.isNotEmpty(internalRoleDel) || CollectionUtils.isNotEmpty(internalRoleNew)) {
             deletedInternalRolesArray = internalRoleDel.toArray(new String[internalRoleDel.size()]);
-            String[] deletedRolesArrayWithDomain = internalRoleNewWithDomain.toArray(new
-                    String[internalRoleNewWithDomain.size()]);
+            String[] deletedRolesArrayWithDomain = internalRoleDelWithDomain.toArray(new
+                    String[internalRoleDelWithDomain.size()]);
             addInternalRolesArray = internalRoleNew.toArray(new String[internalRoleNew.size()]);
             String[] addRolesArrayWithDomain = internalRoleNewWithDomain.toArray(new String[internalRoleNewWithDomain.size()]);
             isPreUpdateInternalRoleListOfUserSuccess = handlePreUpdateRoleListOfUser(userName, deletedRolesArrayWithDomain,
@@ -13940,7 +13948,7 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
         if (newUserIDs == null) {
             newUserIDs = new String[0];
         }
-        if(!handlePreUpdateUserListOfRole(roleName, deletedUserIDs, newUserIDs, false, false)) {
+        if(!handlePreUpdateUserListOfRoleWithID(roleName, deletedUserIDs, newUserIDs, false, false)) {
             handleUpdateUserListOfRoleFailure(
                     ErrorMessages.ERROR_CODE_ERROR_WHILE_PRE_UPDATE_USERS_OF_ROLE.getCode(),
                     String.format(ErrorMessages.ERROR_CODE_ERROR_WHILE_PRE_UPDATE_USERS_OF_ROLE.getMessage(),
