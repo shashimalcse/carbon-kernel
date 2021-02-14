@@ -95,7 +95,9 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
+import static org.wso2.carbon.user.core.UserCoreConstants.DOMAIN_SEPARATOR;
 import static org.wso2.carbon.user.core.UserCoreConstants.INTERNAL_DOMAIN;
+import static org.wso2.carbon.user.core.UserCoreConstants.INTERNAL_SYSTEM_ROLE_PREFIX;
 import static org.wso2.carbon.user.core.UserCoreConstants.SYSTEM_DOMAIN_NAME;
 import static org.wso2.carbon.user.core.UserStoreConfigConstants.RESOLVE_USER_ID_FROM_USER_NAME_CACHE_NAME;
 import static org.wso2.carbon.user.core.UserStoreConfigConstants.RESOLVE_USER_NAME_FROM_UNIQUE_USER_ID_CACHE_NAME;
@@ -7005,11 +7007,14 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
                 }
 
                 boolean success = false;
-                if (internalRole && listener instanceof AbstractUserOperationEventListener) {
-                    success = ((AbstractUserOperationEventListener) listener).doPreDeleteInternalRole(roleName, this);
-                } else if (internalRole && !(listener instanceof AbstractUserOperationEventListener)) {
+                String internalSystemRolePrefix = INTERNAL_DOMAIN + DOMAIN_SEPARATOR + INTERNAL_SYSTEM_ROLE_PREFIX;
+                if (internalRole && roleName.startsWith(internalSystemRolePrefix)) {
                     success = true;
-                } else if (!internalRole) {
+                } else if (internalRole && listener instanceof AbstractUserOperationEventListener) {
+                    success = ((AbstractUserOperationEventListener) listener).doPreDeleteInternalRole(roleName, this);
+                } else if (internalRole) {
+                    success = true;
+                } else {
                     success = listener.doPreDeleteRole(roleName, this);
                 }
 
