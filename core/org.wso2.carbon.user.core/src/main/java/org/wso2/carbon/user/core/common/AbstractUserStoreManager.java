@@ -6731,18 +6731,21 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
 
         try {
             boolean internalRole = isAnInternalRole(roleName);
+            String internalSystemRolePrefix = INTERNAL_DOMAIN + DOMAIN_SEPARATOR + INTERNAL_SYSTEM_ROLE_PREFIX;
             for (UserOperationEventListener listener : UMListenerServiceComponent.getUserOperationEventListeners()) {
                 if (isAuditLogOnly && !listener.getClass().getName().endsWith(UserCoreErrorConstants.AUDIT_LOGGER_CLASS_NAME)) {
                     continue;
                 }
 
-                boolean success = false;
-                if (internalRole && listener instanceof AbstractUserOperationEventListener) {
+                boolean success;
+                if (internalRole && roleName.startsWith(internalSystemRolePrefix)) {
+                    success = true;
+                } else if (internalRole && listener instanceof AbstractUserOperationEventListener) {
                     success = ((AbstractUserOperationEventListener) listener).doPreAddInternalRole(roleName,
                             userList, permissions, this);
-                } else if (internalRole && !(listener instanceof AbstractUserOperationEventListener)) {
+                } else if (internalRole) {
                     success = true;
-                } else if (!internalRole) {
+                } else {
                     success = listener.doPreAddRole(roleName, userList, permissions, this);
                 }
 
@@ -7000,14 +7003,13 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
 
         try {
             boolean internalRole = isAnInternalRole(roleName);
+            String internalSystemRolePrefix = INTERNAL_DOMAIN + DOMAIN_SEPARATOR + INTERNAL_SYSTEM_ROLE_PREFIX;
             for (UserOperationEventListener listener : UMListenerServiceComponent.getUserOperationEventListeners()) {
                 if (isAuditLogOnly && !listener.getClass().getName()
                         .endsWith(UserCoreErrorConstants.AUDIT_LOGGER_CLASS_NAME)) {
                     continue;
                 }
-
-                boolean success = false;
-                String internalSystemRolePrefix = INTERNAL_DOMAIN + DOMAIN_SEPARATOR + INTERNAL_SYSTEM_ROLE_PREFIX;
+                boolean success;
                 if (internalRole && roleName.startsWith(internalSystemRolePrefix)) {
                     success = true;
                 } else if (internalRole && listener instanceof AbstractUserOperationEventListener) {
@@ -14509,19 +14511,22 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
 
         try {
             boolean internalRole = isAnInternalRole(roleName);
+            String internalSystemRolePrefix = INTERNAL_DOMAIN + DOMAIN_SEPARATOR + INTERNAL_SYSTEM_ROLE_PREFIX;
             for (UserOperationEventListener listener : UMListenerServiceComponent.getUserOperationEventListeners()) {
                 if (isAuditLogOnly && !listener.getClass().getName()
                         .endsWith(UserCoreErrorConstants.AUDIT_LOGGER_CLASS_NAME)) {
                     continue;
                 }
 
-                boolean success = false;
-                if (internalRole && listener instanceof AbstractUserOperationEventListener) {
+                boolean success;
+                if (internalRole && roleName.startsWith(internalSystemRolePrefix)) {
+                    success = true;
+                } else if (internalRole && listener instanceof AbstractUserOperationEventListener) {
                     success = ((AbstractUserOperationEventListener) listener)
                             .doPreAddInternalRoleWithID(roleName, userList, permissions, this);
-                } else if (internalRole && !(listener instanceof AbstractUserOperationEventListener)) {
+                } else if (internalRole) {
                     success = true;
-                } else if (!internalRole) {
+                } else {
                     success = ((UniqueIDUserOperationEventListener) listener)
                             .doPreAddRoleWithID(roleName, userList, permissions, this);
                 }
