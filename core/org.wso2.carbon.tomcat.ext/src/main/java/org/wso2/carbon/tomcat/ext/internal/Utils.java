@@ -90,7 +90,6 @@ public class Utils {
         if (uri == null) {
             return null;
         }
-
         if (uri.startsWith("/services/")) {
             //setting the application id for services
             return Utils.getServiceName(uri);
