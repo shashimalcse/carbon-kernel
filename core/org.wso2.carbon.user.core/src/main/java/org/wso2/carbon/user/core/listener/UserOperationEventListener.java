@@ -522,13 +522,13 @@ public interface UserOperationEventListener {
      *
      * @param userName
      * @param deletedInternalRoles
-     * @param newRoles
+     * @param newInternalRoles
      * @param userStoreManager
      * @return
      * @throws UserStoreException
      */
     default boolean doPostUpdateInternalRoleListOfUser(String userName, String[] deletedInternalRoles,
-                                                       String[] newRoles, UserStoreManager userStoreManager)
+                                                       String[] newInternalRoles, UserStoreManager userStoreManager)
             throws UserStoreException {
 
         return true;
