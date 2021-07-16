@@ -346,12 +346,12 @@ public class AbstractUserOperationEventListener implements UniqueIDUserOperation
      *
      * @param userName
      * @param deletedInternalRoles
-     * @param newRoles
+     * @param newInternalRoles
      * @param userStoreManager
      * @return
      * @throws org.wso2.carbon.user.core.UserStoreException
      */
-    public boolean doPostUpdateInternalRoleListOfUser(String userName, String[] deletedInternalRoles, String[] newRoles,
+    public boolean doPostUpdateInternalRoleListOfUser(String userName, String[] deletedInternalRoles, String[] newInternalRoles,
                                                       UserStoreManager userStoreManager) throws UserStoreException {
 
         return true;
