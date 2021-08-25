@@ -5195,7 +5195,7 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
             systemUserRoleManager.updateUserListOfSystemRole(userStore.getDomainFreeName(),
                     UserCoreUtil.removeDomainFromNames(deletedUsers),
                     UserCoreUtil.removeDomainFromNames(newUsers));
-            handleDoPostUpdateUserListOfRole(roleName, deletedUsers, newUsers, true, true);
+            handleDoPostUpdateUserListOfRole(roleName, deletedUsers, newUsers, true, false);
             return;
         }
 
