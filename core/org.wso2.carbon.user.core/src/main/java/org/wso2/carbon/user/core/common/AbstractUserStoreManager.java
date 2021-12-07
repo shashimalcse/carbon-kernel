@@ -4757,6 +4757,11 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
                         claims, profileName);
                 throw new UserStoreException(ErrorMessages.ERROR_CODE_READONLY_USER_STORE.toString());
             }
+            // Set a thread local if the user creation flow is ask password enabled.
+            if (claims != null && claims.containsKey(UserCoreClaimConstants.ASK_PASSWORD_CLAIM_URI) &&
+                    Boolean.parseBoolean(claims.get(UserCoreClaimConstants.ASK_PASSWORD_CLAIM_URI))) {
+                UserCoreUtil.setSkipPasswordPatternValidationThreadLocal(true);
+            }
 
             // This happens only once during first startup - adding administrator user/role.
             if (userName.indexOf(CarbonConstants.DOMAIN_SEPARATOR) > 0) {
@@ -5010,6 +5015,7 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
             }
             // #################### </Post-Listeners> #####################################################
         } finally {
+            UserCoreUtil.removeSkipPasswordPatternValidationThreadLocal();
             credentialObj.clear();
         }
 
@@ -7994,6 +8000,10 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
      */
     protected boolean checkUserPasswordValid(Object credential) throws UserStoreException {
 
+        // Skip password pattern validation if the skipPasswordValidationThreadLocal is set to true.
+        if (UserCoreUtil.getSkipPasswordPatternValidationThreadLocal()) {
+            return true;
+        }
         if (!isSecureCall.get()) {
             Class argTypes[] = new Class[]{Object.class};
             Object object = callSecure("checkUserPasswordValid", new Object[]{credential}, argTypes);
@@ -14107,6 +14117,11 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
                         claims, profileName);
                 throw new UserStoreException(ErrorMessages.ERROR_CODE_READONLY_USER_STORE.toString());
             }
+            // Set a thread local if the user creation flow is ask password enabled.
+            if (claims != null && claims.containsKey(UserCoreClaimConstants.ASK_PASSWORD_CLAIM_URI) &&
+                    Boolean.parseBoolean(claims.get(UserCoreClaimConstants.ASK_PASSWORD_CLAIM_URI))) {
+                UserCoreUtil.setSkipPasswordPatternValidationThreadLocal(true);
+            }
 
             // This happens only once during first startup - adding administrator user/role.
             if (userName.indexOf(CarbonConstants.DOMAIN_SEPARATOR) > 0) {
@@ -14362,6 +14377,7 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
             }
             // #################### </Post-Listeners> #####################################################
         } finally {
+            UserCoreUtil.removeSkipPasswordPatternValidationThreadLocal();
             credentialObj.clear();
         }
 
