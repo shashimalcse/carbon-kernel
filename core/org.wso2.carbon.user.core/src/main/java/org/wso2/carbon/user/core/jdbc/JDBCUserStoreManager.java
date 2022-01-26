@@ -104,6 +104,7 @@ public class JDBCUserStoreManager extends AbstractUserStoreManager {
     protected int maximumUserNameListLength = -1;
     protected int queryTimeout = -1;
 
+    private static final String H2 = "h2";
     private static final String DB2 = "db2";
     private static final String MSSQL = "mssql";
     private static final String ORACLE = "oracle";
@@ -538,7 +539,13 @@ public class JDBCUserStoreManager extends AbstractUserStoreManager {
                 throw new UserStoreException("null connection");
             }
 
-            sqlStmt = realmConfig.getUserStoreProperty(JDBCRealmConstants.GET_ROLE_LIST); // TODO
+            String dbType = DatabaseCreator.getDatabaseType(dbConnection);
+
+            if (H2.equalsIgnoreCase(dbType)) {
+                sqlStmt = realmConfig.getUserStoreProperty(JDBCRealmConstants.GET_ROLE_LIST_H2);
+            } else {
+                sqlStmt = realmConfig.getUserStoreProperty(JDBCRealmConstants.GET_ROLE_LIST);
+            }
 
             prepStmt = dbConnection.prepareStatement(sqlStmt);
             //prepStmt.setString(1, filter);
@@ -584,7 +591,7 @@ public class JDBCUserStoreManager extends AbstractUserStoreManager {
                 roles = lst.toArray(new String[lst.size()]);
             }
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             String msg = "Error occurred while retrieving role names for filter : " + filter + " & max item limit : " +
                          maxItemLimit;
             if (log.isDebugEnabled()) {
@@ -667,7 +674,13 @@ public class JDBCUserStoreManager extends AbstractUserStoreManager {
                 throw new UserStoreException("null connection");
             }
 
-            sqlStmt = realmConfig.getUserStoreProperty(JDBCRealmConstants.GET_SHARED_ROLE_LIST);
+            String dbType = DatabaseCreator.getDatabaseType(dbConnection);
+
+            if (H2.equalsIgnoreCase(dbType)) {
+                sqlStmt = realmConfig.getUserStoreProperty(JDBCRealmConstants.GET_SHARED_ROLE_LIST_H2);
+            } else {
+                sqlStmt = realmConfig.getUserStoreProperty(JDBCRealmConstants.GET_SHARED_ROLE_LIST);
+            }
 
             prepStmt = dbConnection.prepareStatement(sqlStmt);
             byte count = 0;
@@ -707,7 +720,7 @@ public class JDBCUserStoreManager extends AbstractUserStoreManager {
             if (lst.size() > 0) {
                 roles = lst.toArray(new String[lst.size()]);
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             String errorMessage =
                     "Error while retrieving roles from JDBC user store for tenant domain : " + tenantDomain +
                     " & filter : " + filter + "& max item limit : " + maxItemLimit;
@@ -1716,7 +1729,31 @@ public class JDBCUserStoreManager extends AbstractUserStoreManager {
         String domain = realmConfig
                 .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
 
-        String sqlStmt = realmConfig.getUserStoreProperty(JDBCRealmConstants.GET_ROLE_LIST);
+        String sqlStmt;
+        Connection dbConnection = null;
+        try {
+            dbConnection = getDBConnection();
+            if (dbConnection == null) {
+                throw new UserStoreException("null connection");
+            }
+            String dbType = DatabaseCreator.getDatabaseType(dbConnection);
+
+            if (H2.equalsIgnoreCase(dbType)) {
+                sqlStmt = realmConfig.getUserStoreProperty(JDBCRealmConstants.GET_ROLE_LIST_H2);
+            } else {
+                sqlStmt = realmConfig.getUserStoreProperty(JDBCRealmConstants.GET_ROLE_LIST);
+            }
+        } catch (Exception e) {
+            String errorMessage =
+                    "Error in retrieving role list from JDBC user store for domain : " + domain;
+            if (log.isDebugEnabled()) {
+                log.debug(errorMessage, e);
+            }
+            throw new UserStoreException(errorMessage, e);
+        } finally {
+            DatabaseUtil.closeAllConnections(dbConnection);
+        }
+
         if (sqlStmt == null) {
             throw new UserStoreException("The sql statement for retrieving role name is null");
         }
