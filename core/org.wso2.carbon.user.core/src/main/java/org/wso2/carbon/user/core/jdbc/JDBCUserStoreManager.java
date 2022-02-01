@@ -538,7 +538,7 @@ public class JDBCUserStoreManager extends AbstractUserStoreManager {
                 throw new UserStoreException("null connection");
             }
 
-            String sqlStmt = H2.equalsIgnoreCase(DatabaseCreator.getDatabaseType(dbConnection)) ?
+            String sqlStmt = isH2DB(dbConnection) ?
                     realmConfig.getUserStoreProperty(JDBCRealmConstants.GET_ROLE_LIST_H2) :
                     realmConfig.getUserStoreProperty(JDBCRealmConstants.GET_ROLE_LIST);
 
@@ -670,7 +670,7 @@ public class JDBCUserStoreManager extends AbstractUserStoreManager {
                 throw new UserStoreException("null connection");
             }
 
-            String sqlStmt = H2.equalsIgnoreCase(DatabaseCreator.getDatabaseType(dbConnection)) ?
+            String sqlStmt = isH2DB(dbConnection) ?
                     realmConfig.getUserStoreProperty(JDBCRealmConstants.GET_SHARED_ROLE_LIST_H2) :
                     realmConfig.getUserStoreProperty(JDBCRealmConstants.GET_SHARED_ROLE_LIST);
 
@@ -1727,8 +1727,7 @@ public class JDBCUserStoreManager extends AbstractUserStoreManager {
             if (dbConnection == null) {
                 throw new UserStoreException("null connection");
             }
-            sqlStmt = H2.equalsIgnoreCase(DatabaseCreator.getDatabaseType(dbConnection)) ?
-                    realmConfig.getUserStoreProperty(JDBCRealmConstants.GET_ROLE_LIST_H2) :
+            sqlStmt = isH2DB(dbConnection) ? realmConfig.getUserStoreProperty(JDBCRealmConstants.GET_ROLE_LIST_H2) :
                     realmConfig.getUserStoreProperty(JDBCRealmConstants.GET_ROLE_LIST);
         } catch (Exception e) {
             String errorMessage =
@@ -4689,5 +4688,16 @@ public class JDBCUserStoreManager extends AbstractUserStoreManager {
     public boolean isUniqueUserIdEnabled() {
 
         return false;
+    }
+
+    /**
+     * Check if the DB is H2.
+     *
+     * @return true if H2, false otherwise.
+     * @throws Exception if error occurred while getting database type.
+     */
+    private boolean isH2DB(Connection dbConnection) throws Exception {
+
+        return H2.equalsIgnoreCase(DatabaseCreator.getDatabaseType(dbConnection));
     }
 }
