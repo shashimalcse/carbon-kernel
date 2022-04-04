@@ -12165,6 +12165,37 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
     }
 
     /**
+     * Get the user when display name attribute is provided.
+     *
+     * @param userID   user ID.
+     * @param userName user name.
+     * @return User.
+     * @throws UserStoreException User Store Exception.
+     */
+    public User getUserWithDisplayNameEnabled(String userID, String userName) throws UserStoreException {
+
+        if (userID == null && userName == null) {
+            throw new UserStoreException("Both userID and UserName cannot be null.");
+        }
+
+        String domain = getMyDomainName();
+        if (userID == null) {
+            userID = getUserIDFromUserName(userName);
+        }
+
+        if (userName == null) {
+            userName = getUserNameFromUserID(userID);
+        }
+        if (userName.contains(UserCoreConstants.DOMAIN_SEPARATOR)) {
+            domain = UserCoreUtil.extractDomainFromName(userName);
+        }
+        User user = new User(userID, userName, userName);
+        user.setTenantDomain(getTenantDomain(tenantId));
+        user.setUserStoreDomain(domain);
+        return user;
+    }
+
+    /**
      * Get the tenant domain.
      *
      * @return tenant domain.
