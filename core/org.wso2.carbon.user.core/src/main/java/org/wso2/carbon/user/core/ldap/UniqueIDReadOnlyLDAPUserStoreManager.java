@@ -61,7 +61,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -818,13 +817,7 @@ public class UniqueIDReadOnlyLDAPUserStoreManager extends ReadOnlyLDAPUserStoreM
                         // Get the name in the format of domainName/userName|domainName/displayName.
                         name = UserCoreUtil.getCombinedName(domain, name, display);
 
-                        User user;
-                        if (displayName != null  &&
-                                !Objects.equals(domain, UserCoreConstants.PRIMARY_DEFAULT_DOMAIN_NAME)) {
-                            user = getUserWithDisplayNameEnabled(id, name);
-                        } else {
-                            user = getUser(id, name);
-                        }
+                        User user = getUser(id, name);
                         user.setDisplayName(display);
                         user.setUserStoreDomain(domain);
                         user.setTenantDomain(getTenantDomain(tenantId));
