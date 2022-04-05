@@ -80,6 +80,17 @@ public final class UserCoreUtil {
             ThreadLocal<UserMgtContext>();
 
     /**
+     * This thread local is used to keep track whether Ask Password option is enabled during the user addition flow.
+     */
+    private static ThreadLocal<Boolean> skipPasswordPatternValidationThreadLocal = new ThreadLocal<>();
+
+    /**
+     * This thread local is used to skip claim deletion from userstore when non-identity claims are stored in identity store.
+     */
+    private static ThreadLocal<Boolean> skipClaimDeletionFromUserstoreThreadLocal = new ThreadLocal<>();
+
+
+    /**
      * @param arr1
      * @param arr2
      * @return
@@ -480,6 +491,44 @@ public final class UserCoreUtil {
     public static void removeUserMgtContextInThreadLocal() {
 
         threadLocalToSetUserMgtContext.remove();
+    }
+
+    public static void setSkipPasswordPatternValidationThreadLocal(Boolean askPasswordEnabled) {
+
+        skipPasswordPatternValidationThreadLocal.set(askPasswordEnabled);
+    }
+
+    public static boolean getSkipPasswordPatternValidationThreadLocal() {
+
+        if (skipPasswordPatternValidationThreadLocal.get() != null) {
+            return skipPasswordPatternValidationThreadLocal.get().booleanValue();
+        } else {
+            return false;
+        }
+    }
+
+    public static void removeSkipPasswordPatternValidationThreadLocal() {
+
+        skipPasswordPatternValidationThreadLocal.remove();
+    }
+
+    public static void setSkipClaimDeletionFromUserstoreThreadLocal() {
+
+        skipClaimDeletionFromUserstoreThreadLocal.set(true);
+    }
+
+    public static boolean getSkipClaimDeletionFromUserstoreThreadLocal() {
+
+        if (skipClaimDeletionFromUserstoreThreadLocal.get() != null) {
+            return skipClaimDeletionFromUserstoreThreadLocal.get();
+        } else {
+            return false;
+        }
+    }
+
+    public static void removeSkipClaimDeletionFromUserstoreThreadLocal() {
+
+        skipClaimDeletionFromUserstoreThreadLocal.remove();
     }
 
     /**

@@ -488,6 +488,21 @@ public interface UserOperationEventListener {
             throws UserStoreException;
 
     /**
+     * Defines any additional actions after updating the user list of an internal role.
+     *
+     * @param roleName Name of the internal role.
+     * @param deletedUsers deleted user array.
+     * @param newUsers newly added user array.
+     * @param userStoreManager user store manager.
+     * @throws UserStoreException UserStoreException.
+     */
+    default boolean doPostUpdateUserListOfInternalRole(String roleName, String deletedUsers[],
+                                                      String[] newUsers, UserStoreManager userStoreManager) throws UserStoreException {
+
+        return true;
+    }
+
+    /**
      * Define any additional actions before updating role list of user.
      *
      * @param userName
@@ -852,4 +867,20 @@ public interface UserOperationEventListener {
         return true;
     }
 
+    /**
+     * Pre listener for getting paginated user list for certain claim and value.
+     *
+     * @param condition        Conditions with filters.
+     * @param domain           User store domain name.
+     * @param userStoreManager User store manager.
+     * @param limit            Pagination parameter for the size of the page.
+     * @param offset           Pagination parameter that indexes the start of the page.
+     * @throws UserStoreException UserStoreException
+     */
+    default boolean doPreGetPaginatedUserList(Condition condition, List<String> userNames, String domain,
+                                              UserStoreManager userStoreManager, int limit, int offset)
+            throws UserStoreException {
+
+        return true;
+    }
 }
