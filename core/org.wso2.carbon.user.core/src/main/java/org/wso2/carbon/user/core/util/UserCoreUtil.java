@@ -617,6 +617,16 @@ public final class UserCoreUtil {
                 name = domainName + name;
             }
         }
+        /*
+         * Objective of this else if block is to validate the username format "userName|domainName/displayName".
+         * Check if display name is configured and username contains only 1 domain separator and the domain is secondary.
+         */
+        else if (name.contains(UserCoreConstants.NAME_COMBINER) &&
+                org.apache.commons.lang.StringUtils.countMatches(name, UserCoreConstants.DOMAIN_SEPARATOR) == 1 &&
+                domainName != null && !UserCoreConstants.PRIMARY_DEFAULT_DOMAIN_NAME.equalsIgnoreCase(domainName)) {
+            // Append the domain name.
+            name = domainName.toUpperCase() + CarbonConstants.DOMAIN_SEPARATOR + name;
+        }
         return name;
     }
 
