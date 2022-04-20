@@ -493,11 +493,22 @@ public final class UserCoreUtil {
         threadLocalToSetUserMgtContext.remove();
     }
 
+    /**
+     * This method sets the variable to enable password validation skipping if ask password flow is enabled
+     * and disable password validation skipping if ask password flow is disabled.
+     *
+     * @param askPasswordEnabled boolean true if ask password flow is enabled and false if disabled.
+     */
     public static void setSkipPasswordPatternValidationThreadLocal(Boolean askPasswordEnabled) {
 
         skipPasswordPatternValidationThreadLocal.set(askPasswordEnabled);
     }
 
+    /**
+     * This method gets the variable set to enable or disable password validation skipping.
+     *
+     * @return true if password validation skipping is enabled and false if disabled.
+     */
     public static boolean getSkipPasswordPatternValidationThreadLocal() {
 
         if (skipPasswordPatternValidationThreadLocal.get() != null) {
@@ -507,6 +518,9 @@ public final class UserCoreUtil {
         }
     }
 
+    /**
+     * This method removes the thread local variable set to enable or disable password validation skipping.
+     */
     public static void removeSkipPasswordPatternValidationThreadLocal() {
 
         skipPasswordPatternValidationThreadLocal.remove();
