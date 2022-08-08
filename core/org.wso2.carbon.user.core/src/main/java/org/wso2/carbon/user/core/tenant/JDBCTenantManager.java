@@ -373,6 +373,9 @@ public class JDBCTenantManager implements TenantManager {
         try {
             dbConnection = getDBConnection();
             String sqlStmt = TenantConstants.GET_TENANT_SQL;
+            if (isTenantUniqueIdColumnAvailable()) {
+                sqlStmt = TenantConstants.GET_TENANT_SQL_WITH_UUID;
+            }
             prepStmt = dbConnection.prepareStatement(sqlStmt);
             prepStmt.setInt(1, tenantId);
 
@@ -383,7 +386,10 @@ public class JDBCTenantManager implements TenantManager {
                 String domain = result.getString(COLUMN_NAME_UM_DOMAIN_NAME);
                 String email = result.getString(COLUMN_NAME_UM_EMAIL);
                 boolean active = result.getBoolean(COLUMN_NAME_UM_ACTIVE);
-                String uniqueId = result.getString(COLUMN_NAME_UM_TENANT_UUID);
+                String uniqueId = null;
+                if (isTenantUniqueIdColumnAvailable()) {
+                    uniqueId = result.getString(COLUMN_NAME_UM_TENANT_UUID);
+                }
                 Date createdDate = new Date(result.getTimestamp(
                         COLUMN_NAME_UM_CREATED_DATE).getTime());
                 InputStream is = result.getBinaryStream(COLUMN_NAME_UM_USER_CONFIG);
@@ -401,7 +407,9 @@ public class JDBCTenantManager implements TenantManager {
                 tenant.setRealmConfig(realmConfig);
                 setSecondaryUserStoreConfig(realmConfig, tenantId);
                 tenant.setAdminName(realmConfig.getAdminUserName());
-                tenant.setTenantUniqueID(uniqueId);
+                if (uniqueId != null) {
+                    tenant.setTenantUniqueID(uniqueId);
+                }
 
                 if (log.isDebugEnabled()) {
                     log.debug("Obtained tenant from database for the given tenant ID: " + tenantId
