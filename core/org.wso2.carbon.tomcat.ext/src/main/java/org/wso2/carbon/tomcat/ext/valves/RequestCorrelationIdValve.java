@@ -132,7 +132,7 @@ public class RequestCorrelationIdValve extends ValveBase {
                 logRequestDetails(currentTime, timeTaken, CORRELATION_LOG_REQUEST_END, request);
             }
             disAssociateFromThread();
-            ThreadContext.remove(correlationIdMdc);
+            ThreadContext.clearAll();
         }
     }
 
