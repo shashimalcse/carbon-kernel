@@ -89,6 +89,7 @@ public class UniqueIDJDBCUserStoreManager extends JDBCUserStoreManager {
 
     private static final String QUERY_FILTER_STRING_ANY = "*";
     private static final String SQL_FILTER_STRING_ANY = "%";
+    private static final String SQL_FILTER_CHAR_ESCAPE = "\\";
     private static final String CASE_INSENSITIVE_USERNAME = "CaseInsensitiveUsername";
     private static final String SHA_1_PRNG = "SHA1PRNG";
     private static final String DB2 = "db2";
@@ -175,7 +176,6 @@ public class UniqueIDJDBCUserStoreManager extends JDBCUserStoreManager {
             if (filter != null && filter.trim().length() != 0) {
                 filter = filter.trim();
                 filter = filter.replace("*", "%");
-                filter = filter.replace("?", "_");
             } else {
                 filter = "%";
             }
@@ -188,17 +188,27 @@ public class UniqueIDJDBCUserStoreManager extends JDBCUserStoreManager {
                 throw new UserStoreException("Attempts to establish a connection with the data source has failed.");
             }
 
-            if (isCaseSensitiveUsername()) {
-                sqlStmt = realmConfig.getUserStoreProperty(JDBCRealmConstants.GET_USER_FILTER_WITH_ID);
+            if (filter.contains("_")) {
+                filter = filter.replaceAll("_", "\\\\_");
+                sqlStmt = getUserFilterQuery(JDBCRealmConstants.GET_USER_FILTER_WITH_ID_WITH_ESCAPE,
+                        JDBCCaseInsensitiveConstants.GET_USER_FILTER_WITH_ID_CASE_INSENSITIVE_WITH_ESCAPE);
             } else {
-                sqlStmt = realmConfig
-                        .getUserStoreProperty(JDBCCaseInsensitiveConstants.GET_USER_FILTER_WITH_ID_CASE_INSENSITIVE);
+                sqlStmt = getUserFilterQuery(JDBCRealmConstants.GET_USER_FILTER_WITH_ID,
+                        JDBCCaseInsensitiveConstants.GET_USER_FILTER_WITH_ID_CASE_INSENSITIVE);
             }
 
+            filter = filter.replace("?", "_");
             prepStmt = dbConnection.prepareStatement(sqlStmt);
             prepStmt.setString(1, filter);
-            if (sqlStmt.contains(UserCoreConstants.UM_TENANT_COLUMN)) {
-                prepStmt.setInt(2, tenantId);
+            if (sqlStmt.toUpperCase().contains(UserCoreConstants.SQL_ESCAPE_KEYWORD)) {
+                prepStmt.setString(2, SQL_FILTER_CHAR_ESCAPE);
+                if (sqlStmt.contains(UserCoreConstants.UM_TENANT_COLUMN)) {
+                    prepStmt.setInt(3, tenantId);
+                }
+            } else {
+                if (sqlStmt.contains(UserCoreConstants.UM_TENANT_COLUMN)) {
+                    prepStmt.setInt(2, tenantId);
+                }
             }
 
             prepStmt.setMaxRows(maxItemLimit);
@@ -255,6 +265,14 @@ public class UniqueIDJDBCUserStoreManager extends JDBCUserStoreManager {
         }
         return users;
 
+    }
+
+    private String getUserFilterQuery(String caseSensitiveQueryPropertyName, String caseInsensitiveQueryPropertyName) {
+
+        if (isCaseSensitiveUsername()) {
+            return realmConfig.getUserStoreProperty(caseSensitiveQueryPropertyName);
+        }
+        return realmConfig.getUserStoreProperty(caseInsensitiveQueryPropertyName);
     }
 
     @Override
