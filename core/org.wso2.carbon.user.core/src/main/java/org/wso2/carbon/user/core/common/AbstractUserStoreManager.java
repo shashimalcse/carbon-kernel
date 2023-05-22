@@ -12190,6 +12190,11 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
         if (userName == null) {
             userName = getUserNameFromUserID(userID);
         }
+
+        if (StringUtils.isEmpty(userID) || StringUtils.isEmpty(userName)) {
+            throw new UserStoreClientException("User not found in the cache or database");
+        }
+
         if (userName.contains(UserCoreConstants.DOMAIN_SEPARATOR)) {
             domain = UserCoreUtil.extractDomainFromName(userName);
             userName = UserCoreUtil.removeDomainFromName(userName);
@@ -12263,6 +12268,9 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
         if (StringUtils.isEmpty(userID)) {
             if (isUniqueUserIdEnabledInUserStore(userStore)) {
                 userID = doGetUserIDFromUserNameWithID(userName);
+                if (StringUtils.isEmpty(userID)) {
+                    return null;
+                }
                 addToUserIDCache(userID, userName, userStore);
                 addToUserNameCache(userID, userName, userStore);
                 return userID;
@@ -12352,6 +12360,9 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
         String userName = getFromUserNameCache(userID);
         if (StringUtils.isEmpty(userName)) {
             userName = doGetUserNameFromUserIDWithID(userID);
+            if (StringUtils.isEmpty(userName)) {
+                return null;
+            }
             addToUserNameCache(userID, userName, userStore);
             addToUserIDCache(userID, userName, userStore);
         }
@@ -15699,14 +15710,20 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
         Map<String, List<String>> domainAwareUsers = new HashMap<>();
         if (!userIDs.isEmpty()) {
             for (String userID : userIDs) {
-                User user = getUser(userID, null);
-                String domainName = user.getUserStoreDomain();
-                List<String> users = domainAwareUsers.get(domainName);
-                if (users == null) {
-                    users = new ArrayList<>();
-                    domainAwareUsers.put(domainName.toUpperCase(), users);
+                try {
+                    User user = getUser(userID, null);
+                    String domainName = user.getUserStoreDomain();
+                    List<String> users = domainAwareUsers.get(domainName);
+                    if (users == null) {
+                        users = new ArrayList<>();
+                        domainAwareUsers.put(domainName.toUpperCase(), users);
+                    }
+                    users.add(UserCoreUtil.removeDomainFromName(userID));
+                } catch (UserStoreClientException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Could not resolve the user for user id: " + userID);
+                    }
                 }
-                users.add(UserCoreUtil.removeDomainFromName(userID));
             }
         }
 
