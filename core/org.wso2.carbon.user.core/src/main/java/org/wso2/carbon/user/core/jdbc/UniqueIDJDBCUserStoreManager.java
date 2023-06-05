@@ -3687,51 +3687,30 @@ public class UniqueIDJDBCUserStoreManager extends JDBCUserStoreManager {
         sqlBuilder.where("UA.UM_ATTR_NAME = ?", attributeName);
 
         if (ExpressionOperation.EQ.toString().equals(operation)) {
-            if (isCaseSensitiveAttributeName()) {
+            if (isCaseSensitiveUsername()) {
                 sqlBuilder.where("UA.UM_ATTR_VALUE = ?", attributeValue);
             } else {
                 sqlBuilder.where("LOWER(UA.UM_ATTR_VALUE) = ?", attributeValue.toLowerCase());
             }
         } else if (ExpressionOperation.EW.toString().equals(operation)) {
-            if (isCaseSensitiveAttributeName()) {
+            if (isCaseSensitiveUsername()) {
                 sqlBuilder.where("UA.UM_ATTR_VALUE LIKE ?", "%" + attributeValue);
             } else {
                 sqlBuilder.where("LOWER(UA.UM_ATTR_VALUE) LIKE ?", "%" + attributeValue.toLowerCase());
             }
         } else if (ExpressionOperation.CO.toString().equals(operation)) {
-            if (isCaseSensitiveAttributeName()) {
+            if (isCaseSensitiveUsername()) {
                 sqlBuilder.where("UA.UM_ATTR_VALUE LIKE ?", "%" + attributeValue + "%");
             } else {
                 sqlBuilder.where("LOWER(UA.UM_ATTR_VALUE) LIKE ?", "%" + attributeValue.toLowerCase() + "%");
             }
         } else if (ExpressionOperation.SW.toString().equals(operation)) {
-            if (isCaseSensitiveAttributeName()) {
+            if (isCaseSensitiveUsername()) {
                 sqlBuilder.where("UA.UM_ATTR_VALUE LIKE ?", attributeValue + "%");
             } else {
                 sqlBuilder.where("LOWER(UA.UM_ATTR_VALUE) LIKE ?", attributeValue.toLowerCase() + "%");
             }
         }
-    }
-    /**
-     * Check whether the configured SQL for getting users for claim value with id is case sensitive.
-     *
-     * @return true if the configured SQL is case sensitive.
-     */
-    private boolean isCaseSensitiveAttributeName() {
-
-        String configuredSQL = realmConfig.getUserStoreProperty(JDBCRealmConstants.GET_USERS_FOR_CLAIM_VALUE_WITH_ID)
-                .toLowerCase();
-
-        int umAttrValueIndex = configuredSQL.indexOf("um_attr_value");
-        if (umAttrValueIndex >= 0) {
-            int andIndex = configuredSQL.indexOf("and", umAttrValueIndex);
-            if (andIndex > umAttrValueIndex) {
-                // Check if "lower(?)" exists between "UM_ATTR_VALUE" and the subsequent "AND"
-                String substring = configuredSQL.substring(umAttrValueIndex, andIndex);
-                return !substring.contains("lower(?)");
-            }
-        }
-        return true;
     }
 
     private void multiClaimMySqlQueryBuilder(SqlBuilder sqlBuilder, int claimFilterCount,
