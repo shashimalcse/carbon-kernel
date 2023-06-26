@@ -12191,7 +12191,7 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
             userName = getUserNameFromUserID(userID);
         }
 
-        if (StringUtils.isEmpty(userID) || StringUtils.isEmpty(userName)) {
+        if (StringUtils.isEmpty(userID) && StringUtils.isEmpty(userName)) {
             throw new UserStoreClientException("User not found in the cache or database");
         }
 
