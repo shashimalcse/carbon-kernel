@@ -12195,7 +12195,7 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
             throw new UserStoreClientException("User not found in the cache or database");
         }
 
-        if (userName.contains(UserCoreConstants.DOMAIN_SEPARATOR)) {
+        if (StringUtils.isNotEmpty(userName) && userName.contains(UserCoreConstants.DOMAIN_SEPARATOR)) {
             domain = UserCoreUtil.extractDomainFromName(userName);
             userName = UserCoreUtil.removeDomainFromName(userName);
         }
