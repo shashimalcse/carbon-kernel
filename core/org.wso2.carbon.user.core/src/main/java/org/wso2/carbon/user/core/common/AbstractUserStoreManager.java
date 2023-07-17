@@ -1465,6 +1465,51 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
         }
     }
 
+    /**
+     * Given the username and a credential object, the implementation code must validate whether
+     * the user is authenticated.
+     *
+     * @param userName   The username
+     * @param credential The credential of a user
+     * @return AuthenticationResult authentication result contains user is authenticated or not and authenticated user
+     * info.
+     * @throws UserStoreException An unexpected exception has occured
+     */
+    public final AuthenticationResult authenticateWithUsername(final String userName, final Object credential)
+            throws UserStoreException {
+
+        try {
+            return AccessController.doPrivileged((PrivilegedExceptionAction<AuthenticationResult>)
+                    () -> {
+                        if (!validateUserNameAndCredential(userName, credential)) {
+                            return new AuthenticationResult(AuthenticationResult.AuthenticationStatus.FAIL);
+                        }
+                        int index = userName.indexOf(CarbonConstants.DOMAIN_SEPARATOR);
+                        boolean domainProvided = index > 0;
+                        boolean isAuthenticated =  authenticate(userName, credential, domainProvided);
+                        AuthenticationResult authenticationResult;
+                        if (isAuthenticated) {
+                            authenticationResult =
+                                    new AuthenticationResult(AuthenticationResult.AuthenticationStatus.SUCCESS);
+                            User user = getUser(null, userName);
+                            authenticationResult.setAuthenticatedUser(user);
+                            authenticationResult.setAuthenticatedSubjectIdentifier(user.getUsername());
+                        } else {
+                            authenticationResult =
+                                    new AuthenticationResult(AuthenticationResult.AuthenticationStatus.FAIL);
+                        }
+                        return authenticationResult;
+                    });
+        } catch (PrivilegedActionException e) {
+            if (!(e.getException() instanceof UserStoreException)) {
+                handleOnAuthenticateFailure(ErrorMessages.ERROR_CODE_ERROR_WHILE_AUTHENTICATION.getCode(),
+                        String.format(ErrorMessages.ERROR_CODE_ERROR_WHILE_AUTHENTICATION.getMessage(), e.getMessage()),
+                        userName, credential);
+            }
+            throw (UserStoreException) e.getException();
+        }
+    }
+
     protected boolean authenticate(final String userName, final Object credential, final boolean domainProvided)
             throws UserStoreException {
 
@@ -12187,9 +12232,7 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
             userID = getUserIDFromUserName(userName);
         }
 
-        if (userName == null) {
-            userName = getUserNameFromUserID(userID);
-        }
+        userName = getUserNameFromUserID(userID);
 
         if (StringUtils.isEmpty(userID) && StringUtils.isEmpty(userName)) {
             throw new UserStoreClientException("User not found in the cache or database");
@@ -12272,7 +12315,6 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
                     return null;
                 }
                 addToUserIDCache(userID, userName, userStore);
-                addToUserNameCache(userID, userName, userStore);
                 return userID;
             }
 
@@ -12282,7 +12324,6 @@ public abstract class AbstractUserStoreManager implements PaginatedUserStoreMana
             if (claims != null && claims.size() == 1) {
                 userID = claims.get(UserCoreClaimConstants.USER_ID_CLAIM_URI);
                 addToUserIDCache(userID, userName, userStore);
-                addToUserNameCache(userID, userName, userStore);
                 return userID;
             }
         }
